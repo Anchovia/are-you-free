@@ -42,7 +42,7 @@
 
     /* Body */
     body {
-        @apply font-sans font-semibold text-main bg-white;
+        @apply font-sans font-semibold text-main bg-white min-h-screen;
     }
 
     h1 {
