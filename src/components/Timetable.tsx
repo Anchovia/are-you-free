@@ -84,7 +84,7 @@ export default function Timetable({ classes, showFreeTime }: TimetableProps) {
             id="timetable-capture-area"
             className="flex-1 overflow-auto bg-white rounded-xl relative"
         >
-            <div className="flex min-w-[800px] border border-gray-200">
+            <div className="flex border border-gray-200">
                 {/* Y축 (시간) */}
                 <div className="w-16 shrink-0 bg-gray-50 border-r border-gray-200 flex flex-col sticky left-0 z-20">
                     <div className="h-12 border-b border-gray-200 bg-gray-50/90 backdrop-blur sticky top-0 z-30"></div>
