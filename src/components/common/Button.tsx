@@ -5,6 +5,7 @@ interface ButtonProps {
     text: string;
     buttonColor?: ButtonColor;
     onClick?: () => void;
+    type?: "button" | "submit" | "reset";
 }
 
 // variant 별로 적용될 Tailwind 클래스 맵핑
@@ -19,6 +20,7 @@ export default function Button({
     text,
     onClick,
     buttonColor = "default",
+    type = "button",
 }: ButtonProps) {
     const commonStyle =
         "flex-1 flex-none text-center px-4 py-2 rounded-lg text-sm font-bold cursor-pointer transition-colors";
@@ -31,6 +33,7 @@ export default function Button({
         </label>
     ) : (
         <button
+            type={type}
             onClick={onClick}
             className={`${buttonStyles[buttonColor]} ${commonStyle}`}
         >
