@@ -102,7 +102,7 @@ const isGridBorderPixel = (
         return r >= 38 && r <= 78;
     }
 
-    return r >= 225 && r <= 245;
+    return r >= 225 && r <= 239;
 };
 
 // (startX,startY)에서 오른쪽으로 가며 처음 만나는 보더 = OFFSET_X

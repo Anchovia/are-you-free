@@ -65,10 +65,6 @@ export const analyzeEverytimeImage = (
         isDarkMode,
         OFFSET_Y
     );
-
-    console.log("측정된 세로 선 두께:", VerticalBorderThickness);
-    console.log("측정된 가로 선 두께:", HorizontalBorderThickness);
-
     // 요일별 가로 너비
     const DAY_WIDTH = detectDayWidthFromOffset(
         imageData,
@@ -89,13 +85,17 @@ export const analyzeEverytimeImage = (
 
     const results: ImageClassInfo[] = [];
 
-    // 월(0) ~ 금(4) 각 열을 세로 스캔
+    // 요일 각 열을 세로 스캔
+    // 요일 각 열을 세로 스캔
     for (let day = 0; day < startDay; day++) {
-        const scanX = Math.floor(OFFSET_X + day * DAY_WIDTH + DAY_WIDTH * 0.95);
+        const scanX = Math.floor(OFFSET_X + day * DAY_WIDTH + DAY_WIDTH * 0.9);
 
         let isClassOngoing = false;
         let classStartPixelY = 0;
         let currentColor = "";
+        let currentR = 0,
+            currentG = 0,
+            currentB = 0; // ✨ 현재 블록 색상 저장용
 
         for (let y = OFFSET_Y; y < height; y++) {
             // 현재 스캔 좌표의 픽셀 RGB 값을 가져옴
@@ -104,38 +104,101 @@ export const analyzeEverytimeImage = (
             const isBgOrBorder = isBackgroundOrBorder(r, g, b, isDarkMode);
 
             if (!isBgOrBorder) {
-                // 배경이 아닌 첫 픽셀을 수업 시작점으로 기록
                 if (!isClassOngoing) {
+                    // 배경이 아닌 첫 픽셀을 수업 시작점으로 기록
                     isClassOngoing = true;
                     classStartPixelY = y;
                     currentColor = `rgb(${r},${g},${b})`;
+                    currentR = r;
+                    currentG = g;
+                    currentB = b; // 기준 색상 저장
+                } else {
+                    // ✨ 수업 진행 중인데 색상이 확 바뀐 경우 (연강 분리)
+                    const colorDiff =
+                        Math.abs(r - currentR) +
+                        Math.abs(g - currentG) +
+                        Math.abs(b - currentB);
+                    if (colorDiff > 60) {
+                        if (y - classStartPixelY < 15) {
+                            // 1. 탑 섀도우 (노이즈): 시작 직후 바뀐 건 윗쪽 테두리 노이즈이므로 진짜 색상으로 교체만 함
+                            currentColor = `rgb(${r},${g},${b})`;
+                            currentR = r;
+                            currentG = g;
+                            currentB = b;
+                        } else {
+                            // 2. 바텀 섀도우인지, 아니면 진짜 연강인지 판별 (살짝 아래를 미리 봄)
+                            const peekY = Math.min(y + 15, height - 1);
+                            const peekPixel = getPixelRgb(
+                                imageData,
+                                width,
+                                scanX,
+                                peekY
+                            );
+                            const peekIsBg = isBackgroundOrBorder(
+                                peekPixel.r,
+                                peekPixel.g,
+                                peekPixel.b,
+                                isDarkMode
+                            );
+
+                            if (!peekIsBg) {
+                                // 15px 뒤에도 배경이 아니다 -> 완전히 다른 과목이 딱 붙어있는 연강! 자릅니다.
+                                results.push(
+                                    createImageClassInfo(
+                                        day,
+                                        classStartPixelY,
+                                        y,
+                                        OFFSET_Y,
+                                        HOUR_HEIGHT,
+                                        startHour,
+                                        currentColor
+                                    )
+                                );
+                                // 새 과목으로 바로 다시 시작
+                                classStartPixelY = y;
+                                currentColor = `rgb(${r},${g},${b})`;
+                                currentR = r;
+                                currentG = g;
+                                currentB = b;
+                            }
+                            // 만약 peekIsBg가 true라면? 그냥 바텀 섀도우(그림자)이므로 무시하고 통과합니다.
+                        }
+                    }
                 }
             } else if (isClassOngoing) {
                 // 다시 배경을 만나면 수업 종료
                 isClassOngoing = false;
-                const classEndPixelY = y;
-                results.push(
-                    createImageClassInfo(
-                        day,
-                        classStartPixelY,
-                        classEndPixelY,
-                        OFFSET_Y,
-                        HOUR_HEIGHT,
-                        startHour,
-                        currentColor
-                    )
-                );
+
+                // ✨ 30분이 35분으로 잡히는 원인 해결!
+                // 블록 하단의 '그림자(Shadow)' 두께 때문에 시간이 오버되는 것을 막기 위해,
+                // 그림자 높이(약 1시간의 4%)만큼 Y좌표를 빼서 실제 끝나는 시간에 딱 맞춥니다.
+                const shadowOffset = Math.floor(HOUR_HEIGHT * 0.04);
+                const classEndPixelY = y - shadowOffset;
+
+                // ✨ 10px 미만의 자투리 노이즈 블록은 무시
+                if (classEndPixelY - classStartPixelY >= 10) {
+                    results.push(
+                        createImageClassInfo(
+                            day,
+                            classStartPixelY,
+                            classEndPixelY,
+                            OFFSET_Y,
+                            HOUR_HEIGHT,
+                            startHour,
+                            currentColor
+                        )
+                    );
+                }
             }
         }
 
         // 이미지 하단에서 수업이 끝나는 케이스 보정
-        if (isClassOngoing) {
-            const classEndPixelY = height;
+        if (isClassOngoing && height - classStartPixelY >= 10) {
             results.push(
                 createImageClassInfo(
                     day,
                     classStartPixelY,
-                    classEndPixelY,
+                    height,
                     OFFSET_Y,
                     HOUR_HEIGHT,
                     startHour,
