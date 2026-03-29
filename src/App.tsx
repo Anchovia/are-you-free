@@ -73,6 +73,17 @@ function App() {
         }
     };
 
+    const handleRenameSchedule = (oldName: string, newName: string) => {
+        // 1. 상단 뱃지 목록(schedules)에서 이름 변경
+        setSchedules((prev) =>
+            prev.map((name) => (name === oldName ? newName : name))
+        );
+        // 2. 시간표 데이터(parsedClasses)에서 해당 친구의 fId를 새 이름으로 변경
+        setParsedClasses((prev) =>
+            prev.map((c) => (c.fId === oldName ? { ...c, fId: newName } : c))
+        );
+    };
+
     useEffect(() => {
         localStorage.setItem("myTimetables", JSON.stringify(parsedClasses));
         localStorage.setItem("mySchedules", JSON.stringify(schedules));
@@ -91,6 +102,7 @@ function App() {
                             setShowFreeTime((prev) => !prev)
                         }
                         onImport={handleImageImport}
+                        onRenameSchedule={handleRenameSchedule}
                     />
                     <Schedule
                         parsedClasses={parsedClasses}

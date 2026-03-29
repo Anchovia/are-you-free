@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { FaEdit, FaTimes } from "react-icons/fa";
 import {
     FiChevronDown,
@@ -9,6 +9,7 @@ import {
 } from "react-icons/fi";
 import { useImageUpload } from "../../hooks/useImageUpload";
 import Button from "../common/Button";
+import ChangeNameModal from "../modal/ChangeNameModal";
 
 interface ScheduleHeaderProps {
     schedules: string[];
@@ -16,6 +17,7 @@ interface ScheduleHeaderProps {
     showFreeTime: boolean;
     onToggleFreeTime: () => void;
     onImport: (file: File, scheduleName: string) => void;
+    onRenameSchedule: (oldName: string, newName: string) => void;
 }
 
 const colors = ["border-l-purple-200", "border-l-red-100", "border-l-blue-100"];
@@ -26,10 +28,19 @@ export default function ScheduleHeader({
     showFreeTime,
     onToggleFreeTime,
     onImport,
+    onRenameSchedule,
 }: ScheduleHeaderProps) {
     const [openUpload, setOpenUpload] = useState(false);
-    // 💡 목록을 접고 펴는 상태 추가 (기본값: 인원이 있으면 닫아두기)
     const [isListOpen, setIsListOpen] = useState(false);
+    const dialogRef = useRef<HTMLDialogElement>(null);
+
+    const handleCloseModal = () => {
+        if (dialogRef && "current" in dialogRef) {
+            dialogRef.current?.close();
+        }
+    };
+
+    const [editingName, setEditingName] = useState(""); // 현재 수정 중인 기존 이름
 
     // 훅 적용
     const {
@@ -84,8 +95,6 @@ export default function ScheduleHeader({
                     />
                 </nav>
             </div>
-
-            {/* 💡 펼쳐지는 시간표 명단 영역 */}
             {isListOpen && schedules.length > 0 && (
                 <ul className="flex gap-2 flex-wrap">
                     {schedules.map((name, i) => (
@@ -95,7 +104,13 @@ export default function ScheduleHeader({
                                 colors[i % colors.length]
                             } border border-gray-200 bg-white  transition-colors`}
                         >
-                            <FaEdit className="text-gray-500 text-xs" />
+                            <FaEdit
+                                onClick={() => {
+                                    setEditingName(name);
+                                    dialogRef.current?.showModal();
+                                }}
+                                className="text-gray-500 text-xs cursor-pointer hover:text-blue-500"
+                            />
                             <span className="text-gray-600 text-xs">
                                 {name}
                             </span>
@@ -109,7 +124,13 @@ export default function ScheduleHeader({
                     ))}
                 </ul>
             )}
-
+            <ChangeNameModal
+                dialogRef={dialogRef}
+                editingName={editingName}
+                schedules={schedules}
+                onClose={handleCloseModal}
+                onRename={onRenameSchedule}
+            />
             {/* 드래그 앤 드롭 / 클릭 업로드 영역 */}
             {openUpload && schedules.length > 0 && (
                 <label
