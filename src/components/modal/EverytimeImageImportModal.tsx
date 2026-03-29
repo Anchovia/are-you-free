@@ -2,12 +2,7 @@ import { forwardRef, useRef, useState } from "react";
 
 interface EverytimeImageImportModalProps {
     existingSchedules: string[];
-    onImport: (
-        file: File,
-        startHour: number,
-        startDay: number,
-        scheduleName: string
-    ) => void;
+    onImport: (file: File, scheduleName: string) => void;
 }
 
 const EverytimeImageImportModal = forwardRef<
@@ -15,8 +10,6 @@ const EverytimeImageImportModal = forwardRef<
     EverytimeImageImportModalProps
 >(({ existingSchedules, onImport }, ref) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [startHour, setStartHour] = useState<number>(9);
-    const [startDay, setStartDay] = useState<number>(5);
     // 1. 이름 입력을 위한 상태 추가
     const [scheduleName, setScheduleName] = useState<string>("");
 
@@ -39,24 +32,7 @@ const EverytimeImageImportModal = forwardRef<
         // 3. 이미지가 로드되었을 때 사이즈를 체크합니다 (비동기 처리)
         img.onload = () => {
             URL.revokeObjectURL(imageUrl); // 메모리 해제
-
-            /*
-            // 가로 사이즈가 딱 960px인지 확인!
-            if (img.naturalWidth !== 960) {
-                alert(
-                    `에브리타임 정규 스크린샷 규격이 아닙니다.\n(가로 960px 이미지만 가능, 현재: ${img.naturalWidth}px)`
-                );
-
-                // 에러 시 input 요소 초기화 및 파일 선택 해제
-                if (fileInputRef.current) fileInputRef.current.value = "";
-                setSelectedFile(null);
-                return;
-            }
-            */
-
-            // ✨ 960px 검사를 무사히 통과했을 때만 파일 상태를 저장합니다!
             setSelectedFile(file);
-
             // 이름 자동 완성
             if (!scheduleName) setScheduleName(file.name.split(".")[0]);
         };
@@ -75,7 +51,6 @@ const EverytimeImageImportModal = forwardRef<
 
     const resetState = () => {
         setSelectedFile(null);
-        setStartHour(9);
         setScheduleName(""); // 초기화
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
@@ -100,7 +75,7 @@ const EverytimeImageImportModal = forwardRef<
         }
 
         // 모든 검증 통과 후에만 import 실행
-        onImport(selectedFile, startHour, startDay, trimmedName);
+        onImport(selectedFile, trimmedName);
 
         // 상태 초기화는 마지막에 1회만
         resetState();
@@ -169,51 +144,7 @@ const EverytimeImageImportModal = forwardRef<
                     </label>
                 </div>
 
-                {/* --- 2. 시작 시간 선택 영역 --- */}
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">
-                        시간표 시작 시간
-                    </label>
-                    <div className="flex gap-2">
-                        {[7, 8, 9, 10, 11, 12].map((hour) => (
-                            <button
-                                key={hour}
-                                className={`flex-1 py-2 rounded-lg font-bold text-sm transition-colors ${
-                                    startHour === hour
-                                        ? "bg-blue-600 text-white"
-                                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                                }`}
-                                onClick={() => setStartHour(hour)}
-                            >
-                                {hour}시
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* --- 3. 요일 목록 --- */}
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">
-                        요일 갯수
-                    </label>
-                    <div className="flex gap-2">
-                        {[5, 6, 7].map((day) => (
-                            <button
-                                key={day}
-                                className={`flex-1 py-2 rounded-lg font-bold text-sm transition-colors ${
-                                    startDay === day
-                                        ? "bg-blue-600 text-white"
-                                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                                }`}
-                                onClick={() => setStartDay(day)}
-                            >
-                                {day}개
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* --- 4. 버튼 영역 --- */}
+                {/* --- 2. 버튼 영역 --- */}
                 <div className="flex gap-2 mt-2">
                     <button
                         className="flex-1 py-3 font-bold bg-gray-100 rounded-xl"

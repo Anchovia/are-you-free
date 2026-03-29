@@ -23,17 +23,12 @@ function App() {
     const dialogRef = useRef<HTMLDialogElement>(null);
 
     // 이미지 업로드 핸들러
-    const handleImageImport = (
-        file: File,
-        startHour: number,
-        startDay: number,
-        scheduleName: string
-    ) => {
+    const handleImageImport = (file: File, scheduleName: string) => {
         const imageUrl = URL.createObjectURL(file);
         const img = new Image();
 
-        img.onload = () => {
-            const results = analyzeEverytimeImage(img, startHour, startDay);
+        img.onload = async () => {
+            const results = await analyzeEverytimeImage(img);
 
             if (results && results.length > 0) {
                 // 받아온 이름을 그대로 사용!

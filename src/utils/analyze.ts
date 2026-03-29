@@ -13,17 +13,16 @@ import {
 } from "./utils";
 
 // 에브리타임 시간표 이미지에서 수업 블록을 읽어 시간 정보로 변환
-export const analyzeEverytimeImage = (
-    image: HTMLImageElement,
-    startHour: number,
-    startDay: number
-): ImageClassInfo[] | null => {
+export const analyzeEverytimeImage = async (
+    image: HTMLImageElement
+): Promise<ImageClassInfo[] | null> => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return null;
 
     const width = image.width;
     const height = image.height;
+
     canvas.width = width;
     canvas.height = height;
     ctx.drawImage(image, 0, 0);
@@ -83,12 +82,43 @@ export const analyzeEverytimeImage = (
         HorizontalBorderThickness
     );
 
+    // 날짜 갯수
+    const maxDay = Math.trunc((width - OFFSET_X) / DAY_WIDTH);
+
+    let startHour = 9; // OCR 실패 시 사용할 기본값
+    try {
+        // ocr.ts를 동적 임포트해서 초기 로딩 속도 방어
+        const { extractStartHourImage, detectStartHourWithOCR } =
+            await import("./ocr");
+        const cropCanvas = extractStartHourImage(
+            image,
+            OFFSET_X,
+            OFFSET_Y,
+            HOUR_HEIGHT,
+            isDarkMode
+        );
+
+        console.log("시작 시간을 찾기 위해 OCR 분석을 시작합니다...");
+        const ocrResult = await detectStartHourWithOCR(cropCanvas);
+
+        if (ocrResult !== null) {
+            startHour = ocrResult;
+            console.log(`✅ OCR 인식 성공! 시간표 시작 시간: ${startHour}시`);
+        } else {
+            console.warn(
+                `⚠️ OCR 인식 실패. 기본값인 ${startHour}시로 설정합니다.`
+            );
+        }
+    } catch (e) {
+        console.error("OCR 모듈 로드 또는 실행 실패:", e);
+    }
+
     const results: ImageClassInfo[] = [];
 
     // 요일 각 열을 세로 스캔
     // 요일 각 열을 세로 스캔
-    for (let day = 0; day < startDay; day++) {
-        const scanX = Math.floor(OFFSET_X + day * DAY_WIDTH + DAY_WIDTH * 0.9);
+    for (let day = 0; day < maxDay; day++) {
+        const scanX = Math.floor(OFFSET_X + day * DAY_WIDTH + DAY_WIDTH - 7);
 
         let isClassOngoing = false;
         let classStartPixelY = 0;
@@ -169,10 +199,11 @@ export const analyzeEverytimeImage = (
                 // 다시 배경을 만나면 수업 종료
                 isClassOngoing = false;
 
-                // ✨ 30분이 35분으로 잡히는 원인 해결!
-                // 블록 하단의 '그림자(Shadow)' 두께 때문에 시간이 오버되는 것을 막기 위해,
-                // 그림자 높이(약 1시간의 4%)만큼 Y좌표를 빼서 실제 끝나는 시간에 딱 맞춥니다.
-                const shadowOffset = Math.floor(HOUR_HEIGHT * 0.04);
+                // ✨ PC vs 모바일 그림자 문제 완벽 해결!
+                // 1시간 높이가 100px 이상인 경우(모바일)에만 하단 그림자를 깎아내고,
+                // 100px 미만인 경우(PC 웹)는 그림자가 없으므로 그대로(0) 유지합니다.
+                const shadowOffset =
+                    HOUR_HEIGHT > 100 ? Math.floor(HOUR_HEIGHT * 0.04) : 0;
                 const classEndPixelY = y - shadowOffset;
 
                 // ✨ 10px 미만의 자투리 노이즈 블록은 무시
