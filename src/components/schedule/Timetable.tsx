@@ -4,19 +4,32 @@ import type { ClassInfo } from "../../types/schedule";
 interface TimetableProps {
     classes: ClassInfo[];
     showFreeTime: boolean;
+    selectedSchedule: string | null;
 }
 
 const FRIEND_COLORS_HEX = [
-    "#dbeafe", // 파랑 (blue-100)
-    "#fce7f3", // 분홍 (pink-100)
-    "#dcfce7", // 초록 (green-100)
-    "#fef3c7", // 노랑 (yellow-100)
-    "#f3e8ff", // 보라 (purple-100)
+    "#d3e5fd", // blue ~110
+    "#fdddf0", // pink ~110
+    "#d4fbe3", // green ~110
+    "#fef1bb", // yellow ~110
+    "#f0e1ff", // purple ~110
+];
+
+const FRIEND_COLORS_HEX_DARK = [
+    "#c2d7fa", // blue ~170
+    "#fbc7de", // pink ~170
+    "#bdf3d2", // green ~170
+    "#fde28f", // yellow ~170
+    "#e6d2ff", // purple ~170
 ];
 
 const ALL_DAYS = ["월", "화", "수", "목", "금", "토", "일"];
 
-export default function Timetable({ classes, showFreeTime }: TimetableProps) {
+export default function Timetable({
+    classes,
+    showFreeTime,
+    selectedSchedule,
+}: TimetableProps) {
     const startHour = 7;
     const endHour = 23;
     const hours = Array.from(
@@ -40,13 +53,10 @@ export default function Timetable({ classes, showFreeTime }: TimetableProps) {
 
     const getFriendColorHex = (fId: string) => {
         const index = uniqueFriends.indexOf(fId);
-        return FRIEND_COLORS_HEX[index % FRIEND_COLORS_HEX.length];
-    };
-
-    const formatTimeText = (time: number) => {
-        const h = Math.floor(time);
-        const m = Math.round((time - h) * 60);
-        return m === 0 ? `${h}시` : `${h}시 ${m}분`;
+        const isSelected = selectedSchedule === fId;
+        return isSelected
+            ? FRIEND_COLORS_HEX_DARK[index % FRIEND_COLORS_HEX_DARK.length]
+            : FRIEND_COLORS_HEX[index % FRIEND_COLORS_HEX.length];
     };
 
     // ★ 추가된 로직: 같은 사람(fId), 같은 요일(day)의 연속/겹치는 시간을 하나의 블록으로 병합
@@ -121,21 +131,14 @@ export default function Timetable({ classes, showFreeTime }: TimetableProps) {
             .map((block, idx) => (
                 <div
                     key={`free-${idx}`}
-                    className="absolute z-10 rounded-lg border border-red-300/60 bg-red-100/70 flex flex-col items-center justify-center pointer-events-none"
+                    className="absolute z-10 rounded-lg  bg-gray-300/70 flex flex-col items-center justify-center pointer-events-none"
                     style={{
                         top: `${(block.start - startHour) * hourHeight}px`,
                         height: `${(block.end - block.start) * hourHeight}px`,
                         left: "4px",
                         right: "4px",
                     }}
-                >
-                    <div className="bg-background/80 px-2 py-1 rounded-lg text-center shadow-sm backdrop-blur-sm">
-                        <span className="block text-green-700 font-bold text-xs">
-                            {formatTimeText(block.start)} ~{" "}
-                            {formatTimeText(block.end)}
-                        </span>
-                    </div>
-                </div>
+                />
             ));
     };
 
@@ -179,7 +182,7 @@ export default function Timetable({ classes, showFreeTime }: TimetableProps) {
                                 key={h}
                                 className="h-15 flex items-start justify-center pt-1 text-[10px] lg:text-xs text-muted-foreground border-b border-gray-200 last:border-b-0"
                             >
-                                {h}:00
+                                {h}시
                             </div>
                         ))}
                     </div>
@@ -218,11 +221,7 @@ export default function Timetable({ classes, showFreeTime }: TimetableProps) {
                                                     getFriendColorHex(c.fId),
                                             }}
                                             title={`[${c.fId}]`}
-                                        >
-                                            <div className="text-xs font-medium text-foreground/80 truncate">
-                                                {c.fId}
-                                            </div>
-                                        </div>
+                                        ></div>
                                     );
                                 })}
                         </div>

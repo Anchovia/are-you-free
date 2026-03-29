@@ -8,6 +8,7 @@ interface ScheduleProps {
     showFreeTime: boolean;
     schedules: string[];
     onImport: (file: File, scheduleName: string) => void;
+    selectedSchedule: string | null;
 }
 
 export default function Schedule({
@@ -15,6 +16,7 @@ export default function Schedule({
     showFreeTime,
     schedules,
     onImport,
+    selectedSchedule,
 }: ScheduleProps) {
     const {
         isDragging,
@@ -32,6 +34,7 @@ export default function Schedule({
                 <Timetable
                     classes={parsedClasses}
                     showFreeTime={showFreeTime}
+                    selectedSchedule={selectedSchedule}
                 />
             ) : (
                 <label

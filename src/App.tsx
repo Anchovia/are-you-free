@@ -22,6 +22,11 @@ function App() {
     // <dialog> 태그 Ref
     const dialogRef = useRef<HTMLDialogElement>(null);
 
+    // ✅ 추가: 현재 클릭해서 선택된 시간표(이름) 상태
+    const [selectedSchedule, setSelectedSchedule] = useState<string | null>(
+        null
+    );
+
     // 이미지 업로드 핸들러
     const handleImageImport = (file: File, scheduleName: string) => {
         const imageUrl = URL.createObjectURL(file);
@@ -103,12 +108,15 @@ function App() {
                         }
                         onImport={handleImageImport}
                         onRenameSchedule={handleRenameSchedule}
+                        selectedSchedule={selectedSchedule}
+                        onSelectSchedule={setSelectedSchedule}
                     />
                     <Schedule
                         parsedClasses={parsedClasses}
                         showFreeTime={showFreeTime}
                         schedules={schedules}
                         onImport={handleImageImport}
+                        selectedSchedule={selectedSchedule}
                     />
                 </div>
             </main>

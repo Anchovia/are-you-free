@@ -18,6 +18,8 @@ interface ScheduleHeaderProps {
     onToggleFreeTime: () => void;
     onImport: (file: File, scheduleName: string) => void;
     onRenameSchedule: (oldName: string, newName: string) => void;
+    selectedSchedule: string | null;
+    onSelectSchedule: (name: string | null) => void;
 }
 
 const colors = ["border-l-purple-200", "border-l-red-100", "border-l-blue-100"];
@@ -29,6 +31,8 @@ export default function ScheduleHeader({
     onToggleFreeTime,
     onImport,
     onRenameSchedule,
+    selectedSchedule,
+    onSelectSchedule,
 }: ScheduleHeaderProps) {
     const [openUpload, setOpenUpload] = useState(false);
     const [isListOpen, setIsListOpen] = useState(false);
@@ -102,7 +106,12 @@ export default function ScheduleHeader({
                             key={i}
                             className={`flex items-center px-3 py-1.5 rounded-full font-medium gap-1 border-l-4 ${
                                 colors[i % colors.length]
-                            } border border-gray-200 bg-white  transition-colors`}
+                            } border border-gray-200 bg-white  transition-colors ${
+                                // ✅ 추가: 선택되었을 때 배경색을 살짝 다르게 주어 시각적 효과 추가 (원치 않으면 제거 가능)
+                                selectedSchedule === name
+                                    ? "bg-gray-100 ring-1 ring-gray-300"
+                                    : ""
+                            }`}
                         >
                             <FaEdit
                                 onClick={() => {
@@ -111,7 +120,19 @@ export default function ScheduleHeader({
                                 }}
                                 className="text-gray-500 text-xs cursor-pointer hover:text-blue-500"
                             />
-                            <span className="text-gray-600 text-xs">
+                            <span
+                                className={`text-xs cursor-pointer select-none transition-colors ${
+                                    selectedSchedule === name
+                                        ? "text-gray-900 font-bold"
+                                        : "text-gray-600"
+                                }`}
+                                onClick={() => {
+                                    // 이미 선택된 걸 누르면 null(해제), 아니면 해당 이름으로 설정
+                                    onSelectSchedule(
+                                        selectedSchedule === name ? null : name
+                                    );
+                                }}
+                            >
                                 {name}
                             </span>
                             <button

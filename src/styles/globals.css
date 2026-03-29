@@ -37,7 +37,7 @@
     }
 
     body {
-        @apply font-sans font-semibold text-main bg-white min-h-screen *:min-h-screen;
+        @apply font-sans font-semibold text-main bg-white min-h-screen tracking-wide *:min-h-screen;
     }
     h1 {
         @apply text-xl font-bold text-blue-500;
