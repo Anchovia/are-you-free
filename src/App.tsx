@@ -8,26 +8,21 @@ import { analyzeEverytimeImage } from "./utils/analyze";
 import { timeStringToNumber } from "./utils/utils";
 
 function App() {
-    // 목록에 보여줄 시간표의 이름들을 저장하는 배열 (예: ["시간표 1", "시간표 2"])
     const [schedules, setSchedules] = useState<string[]>(() => {
         const savedSchedules = localStorage.getItem("mySchedules");
         return savedSchedules ? JSON.parse(savedSchedules) : [];
     });
-    // HTML에서 parse한 실제 수업 정보 객체들을 모아두는 배열 (<Timetable>에 전달)
     const [parsedClasses, setParsedClasses] = useState<ClassInfo[]>(() => {
         const savedClasses = localStorage.getItem("myTimetables");
         return savedClasses ? JSON.parse(savedClasses) : [];
     });
     const [showFreeTime, setShowFreeTime] = useState<boolean>(false);
-    // <dialog> 태그 Ref
     const dialogRef = useRef<HTMLDialogElement>(null);
 
-    // ✅ 추가: 현재 클릭해서 선택된 시간표(이름) 상태
     const [selectedSchedule, setSelectedSchedule] = useState<string | null>(
         null
     );
 
-    // 이미지 업로드 핸들러
     const handleImageImport = (file: File, scheduleName: string) => {
         const imageUrl = URL.createObjectURL(file);
         const img = new Image();
@@ -36,16 +31,15 @@ function App() {
             const results = await analyzeEverytimeImage(img);
 
             if (results && results.length > 0) {
-                // 받아온 이름을 그대로 사용!
                 const convertedClasses: ClassInfo[] = results.map((result) => ({
-                    fId: scheduleName, // 모달에서 사용자가 입력한 이름
+                    fId: scheduleName,
                     day: result.day,
                     start: timeStringToNumber(result.startTime),
                     end: timeStringToNumber(result.endTime),
                 }));
 
                 setParsedClasses((prev) => [...prev, ...convertedClasses]);
-                setSchedules((prev) => [...prev, scheduleName]); // 상단 뱃지용 이름 저장
+                setSchedules((prev) => [...prev, scheduleName]);
 
                 dialogRef.current?.close();
             } else {
@@ -64,14 +58,11 @@ function App() {
         }
     };
 
-    // 특정 시간표만 삭제하는 함수
     const handleRemoveSchedule = (nameToRemove: string) => {
         if (window.confirm(`'${nameToRemove}' 시간표를 제외하시겠습니까?`)) {
-            // 1. 상단 뱃지 목록에서 제거
             setSchedules((prev) =>
                 prev.filter((name) => name !== nameToRemove)
             );
-            // 2. 시간표 렌더링 목록에서 해당 친구(fId)의 수업 싹 다 제거
             setParsedClasses((prev) =>
                 prev.filter((c) => c.fId !== nameToRemove)
             );
@@ -79,11 +70,9 @@ function App() {
     };
 
     const handleRenameSchedule = (oldName: string, newName: string) => {
-        // 1. 상단 뱃지 목록(schedules)에서 이름 변경
         setSchedules((prev) =>
             prev.map((name) => (name === oldName ? newName : name))
         );
-        // 2. 시간표 데이터(parsedClasses)에서 해당 친구의 fId를 새 이름으로 변경
         setParsedClasses((prev) =>
             prev.map((c) => (c.fId === oldName ? { ...c, fId: newName } : c))
         );

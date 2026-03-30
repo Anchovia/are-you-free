@@ -4,7 +4,7 @@ import Button from "../common/Button";
 
 interface HeaderProps {
     dialogRef: React.RefObject<HTMLDialogElement | null>;
-    onReset: () => void; // 부모로부터 받을 초기화 함수
+    onReset: () => void;
 }
 
 export default function Header({ onReset }: HeaderProps) {

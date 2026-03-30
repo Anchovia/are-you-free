@@ -29,7 +29,6 @@ export default function Schedule({
 
     return (
         <section className="flex flex-col bg-white rounded-2xl lg:rounded-3xl shadow-lg p-4 lg:p-6">
-            {/* 시간표 표시 부분 */}
             {parsedClasses.length > 0 ? (
                 <Timetable
                     classes={parsedClasses}

@@ -7,7 +7,7 @@ export interface ClassInfo {
 
 export interface ImageClassInfo {
     day: number;
-    startTime: string; // "HH:MM" 형식
-    endTime: string; // "HH:MM" 형식
-    color: string; // "rgb(R,G,B)" 형식
+    startTime: string;
+    endTime: string;
+    color: string;
 }

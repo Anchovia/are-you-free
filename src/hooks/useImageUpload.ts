@@ -1,10 +1,9 @@
-// src/hooks/useImageUpload.ts
 import { useRef, useState } from "react";
 
 interface UseImageUploadProps {
     schedules: string[];
     onImport: (file: File, scheduleName: string) => void;
-    onSuccess?: () => void; // 업로드 성공 시 추가로 실행할 함수 (예: 업로드 창 닫기)
+    onSuccess?: () => void;
 }
 
 export function useImageUpload({
@@ -75,7 +74,6 @@ export function useImageUpload({
         if (file) processFile(file);
     };
 
-    // UI에 연결할 값과 함수들만 반환합니다.
     return {
         isDragging,
         fileInputRef,

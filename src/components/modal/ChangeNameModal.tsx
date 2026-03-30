@@ -34,7 +34,6 @@ export default function ChangeNameModal({
     };
 
     const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
-        // 이벤트가 발생한 타겟이 dialog 자기 자신(배경)일 때만 닫기
         if (e.target === dialogRef.current) {
             onClose();
         }
