@@ -165,12 +165,12 @@ export default function Timetable({
                                 });
                             }
                         }}
-                        className={`absolute z-10 bg-[#a1f3be] flex flex-col items-center justify-center cursor-pointer transition-all duration-200 ${
+                        className={`absolute z-10 bg-[#a1f3be] shadow-md border border-emerald-200 flex flex-col items-center justify-center cursor-pointer transition-all rounded-lg duration-200 ${
                             isActive
-                                ? "border-2 border-emerald-600 shadow-md opacity-100 z-20 scale-[1.01]"
+                                ? "shadow-md opacity-100 z-20 scale-[1.01]"
                                 : isOtherActive
-                                  ? "border border-green-400 opacity-30 hover:opacity-60"
-                                  : "border border-green-400 opacity-80 hover:opacity-100 hover:border-green-500"
+                                  ? " opacity-30 hover:opacity-60"
+                                  : " opacity-80 hover:opacity-100 hover:border-green-500"
                         }`}
                         style={{
                             top: `${(block.start - startHour) * hourHeight - (isActive ? 1 : 0)}px`,
@@ -222,7 +222,7 @@ export default function Timetable({
                     <div className="left-0 z-30 border-r border-gray-200 bg-card shadow-[2px_0_5px_-2px_rgba(0,0,0,0.03)] relative">
                         {activeFreeTime && (
                             <div
-                                className="absolute left-0 right-0 border-2 shadow-md border-emerald-600 pointer-events-none transition-all duration-300 z-20 scale-[1.01]"
+                                className="absolute left-0 right-0 border border-gray-300 shadow-md pointer-events-none transition-all duration-300 z-20"
                                 style={{
                                     top: `${(activeFreeTime.start - startHour) * hourHeight - 1}px`,
                                     height: `${(activeFreeTime.end - activeFreeTime.start) * hourHeight + 1}px`,
@@ -238,7 +238,7 @@ export default function Timetable({
                                     key={h}
                                     className={`h-15 flex items-start justify-center pt-1 text-[10px] lg:text-xs border-b border-gray-200 last:border-b-0 transition-all duration-300 ${
                                         isHighlighted
-                                            ? "font-bold text-black bg-emerald-100 opacity-100"
+                                            ? "font-bold text-black opacity-100"
                                             : isAnyActive
                                               ? "text-muted-foreground opacity-30"
                                               : "text-muted-foreground opacity-100"
